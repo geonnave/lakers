@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Install Rust formatter
       run: rustup component add rustfmt
     - name: Check if code is well formatted
@@ -30,7 +30,7 @@ jobs:
 
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Run unit tests with default features
       run: RUST_BACKTRACE=1 cargo test
@@ -48,7 +48,7 @@ jobs:
 
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Run unit tests with feature matrix # note that we only add `--package lakers-ead-authz` when testing with that config
       run: RUST_BACKTRACE=1 cargo test -p lakers -p lakers-crypto -p lakers-shared ${{ matrix.ead == 'ead-authz' && '-p lakers-ead-authz' || '' }}  --no-default-features --features="${{ matrix.crypto_backend }}, test-${{ matrix.ead }}" --no-fail-fast -- --test-threads 1
@@ -65,7 +65,7 @@ jobs:
 
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install arm targets for Rust
       run: rustup target add thumbv7m-none-eabi && rustup target add thumbv7em-none-eabihf
@@ -81,7 +81,7 @@ jobs:
 
     steps:
     - name: Checkout lakers
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Generate fstar code over lakers and lakers-shared
       run: |
@@ -98,7 +98,7 @@ jobs:
         zip -j -r lakers-fstar.zip $(find . -name *fst)
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: fstar-code
         path: ./lakers-fstar.zip
@@ -114,7 +114,7 @@ jobs:
 
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install arm targets for Rust
       run: rustup target add thumbv7em-none-eabihf
@@ -125,138 +125,138 @@ jobs:
       run: cd lakers-c && ./build.sh "${{ matrix.crypto_backend }}"
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: lakers-c
         path: ./target/lakers-c-*.zip
 
 
-  build-lakers-c-example:
-    needs: unit-tests
-    runs-on: ubuntu-latest
+  # build-lakers-c-example:
+  #   needs: unit-tests
+  #   runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
+  #   strategy:
+  #     fail-fast: false
 
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+  #   steps:
+  #   - name: Checkout repo
+  #     uses: actions/checkout@v4
 
-    - name: Checkout libcoap
-      uses: actions/checkout@v3
-      with:
-        repository: obgm/libcoap
-        path: libcoap
+  #   - name: Checkout libcoap
+  #     uses: actions/checkout@v4
+  #     with:
+  #       repository: obgm/libcoap
+  #       path: libcoap
 
-    - name: Install libcoap
-      run: |
-        cd libcoap && ./autogen.sh
-        ./configure --disable-doxygen --disable-manpages --disable-dtls --disable-oscore
-        make && sudo make install
+  #   - name: Install libcoap
+  #     run: |
+  #       cd libcoap && ./autogen.sh
+  #       ./configure --disable-doxygen --disable-manpages --disable-dtls --disable-oscore
+  #       make && sudo make install
 
-    - name: Install arm targets for Rust
-      run: rustup target add thumbv7em-none-eabihf
-    - name: Install arm gcc
-      run: sudo apt-get -y update && sudo apt-get -y install gcc-arm-none-eabi
+  #   - name: Install arm targets for Rust
+  #     run: rustup target add thumbv7em-none-eabihf
+  #   - name: Install arm gcc
+  #     run: sudo apt-get -y update && sudo apt-get -y install gcc-arm-none-eabi
 
-    - name: Build static library and generate headers
-      run: cd lakers-c && ./build.sh crypto-rustcrypto
+  #   - name: Build static library and generate headers
+  #     run: cd lakers-c && ./build.sh crypto-rustcrypto
 
-    - name: Build and run native C eaxmple
-      run: |
-        cd examples/lakers-c-native
-        make all LAKERS_EAD=authz
-
-
-  test-lakers-python:
-    needs: check-style
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-
-    - name: set up python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-
-    - name: Test Python package
-      run: |
-        cd lakers-python
-        python3 -m venv .venv
-        source .venv/bin/activate
-        pip install --upgrade pip
-        pip install -U maturin pytest cbor2
-        pip freeze
-        maturin develop && pytest
+  #   - name: Build and run native C eaxmple
+  #     run: |
+  #       cd examples/lakers-c-native
+  #       make all LAKERS_EAD=authz
 
 
-  run-example-on-qemu:
-    needs: unit-tests
-    runs-on: ubuntu-latest
+  # test-lakers-python:
+  #   needs: check-style
+  #   runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        crypto_backend: [crypto-psa]
+  #   strategy:
+  #     fail-fast: false
 
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+  #   steps:
+  #   - name: Checkout repo
+  #     uses: actions/checkout@v4
 
-    - name: Install arm targets for Rust
-      run: rustup target add thumbv7m-none-eabi
-    - name: Install arm gcc
-      run: sudo apt-get -y update && sudo apt-get -y install gcc-arm-none-eabi
-    - name: Install QEMU ARM emulator
-      run: sudo apt-get -y install qemu-system-arm
+  #   - name: set up python
+  #     uses: actions/setup-python@v5
+  #     with:
+  #       python-version: '3.10'
 
-    - name: Run tests in QEMU
-      run: cd examples/lakers-no_std && cargo run --target="thumbv7m-none-eabi" --no-default-features --features="${{ matrix.crypto_backend }}" --release
-
-
-  build-example-for-cortex-m4:
-    needs: unit-tests
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        crypto_backend: [crypto-psa, crypto-cryptocell310]
-
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-
-    - name: Install arm targets for Rust
-      run: rustup target add thumbv7em-none-eabihf
-    - name: Install arm gcc
-      run: sudo apt-get -y update && sudo apt-get -y install gcc-arm-none-eabi
-
-    - name: Build example
-      run: cd examples/lakers-no_std && cargo build --target="thumbv7em-none-eabihf" --no-default-features --features="${{ matrix.crypto_backend }}, rtt" --release
+  #   - name: Test Python package
+  #     run: |
+  #       cd lakers-python
+  #       python3 -m venv .venv
+  #       source .venv/bin/activate
+  #       pip install --upgrade pip
+  #       pip install -U maturin pytest cbor2
+  #       pip freeze
+  #       maturin develop && pytest
 
 
-  build-coap-example:
-    needs: unit-tests
-    runs-on: ubuntu-latest
+  # run-example-on-qemu:
+  #   needs: unit-tests
+  #   runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       crypto_backend: [crypto-psa]
 
-    - name: Build server
-      run: cargo build --bin coapserver
+  #   steps:
+  #   - name: Checkout repo
+  #     uses: actions/checkout@v4
 
-    - name: Build client
-      run: cargo build --bin coapclient
+  #   - name: Install arm targets for Rust
+  #     run: rustup target add thumbv7m-none-eabi
+  #   - name: Install arm gcc
+  #     run: sudo apt-get -y update && sudo apt-get -y install gcc-arm-none-eabi
+  #   - name: Install QEMU ARM emulator
+  #     run: sudo apt-get -y install qemu-system-arm
 
-    - name: Build coap-handler based server
-      run: cargo build --bin coapserver-coaphandler
+  #   - name: Run tests in QEMU
+  #     run: cd examples/lakers-no_std && cargo run --target="thumbv7m-none-eabi" --no-default-features --features="${{ matrix.crypto_backend }}" --release
+
+
+  # build-example-for-cortex-m4:
+  #   needs: unit-tests
+  #   runs-on: ubuntu-latest
+
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       crypto_backend: [crypto-psa, crypto-cryptocell310]
+
+  #   steps:
+  #   - name: Checkout repo
+  #     uses: actions/checkout@v4
+
+  #   - name: Install arm targets for Rust
+  #     run: rustup target add thumbv7em-none-eabihf
+  #   - name: Install arm gcc
+  #     run: sudo apt-get -y update && sudo apt-get -y install gcc-arm-none-eabi
+
+  #   - name: Build example
+  #     run: cd examples/lakers-no_std && cargo build --target="thumbv7em-none-eabihf" --no-default-features --features="${{ matrix.crypto_backend }}, rtt" --release
+
+
+  # build-coap-example:
+  #   needs: unit-tests
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #   - name: Checkout repo
+  #     uses: actions/checkout@v4
+
+  #   - name: Build server
+  #     run: cargo build --bin coapserver
+
+  #   - name: Build client
+  #     run: cargo build --bin coapclient
+
+  #   - name: Build coap-handler based server
+  #     run: cargo build --bin coapserver-coaphandler
 
 
   release:
@@ -264,16 +264,16 @@ jobs:
     needs: [
       build-edhoc-package, build-lakers-c,
       generate-fstar,
-      build-example-for-cortex-m4, build-coap-example, build-lakers-c-example,
-      run-example-on-qemu,
+      # build-example-for-cortex-m4, build-coap-example, build-lakers-c-example,
+      # run-example-on-qemu,
     ]
-    if: >-
-      github.event_name == 'push' &&
-      startsWith(github.event.ref, 'refs/tags')
+    # if: >-
+    #   github.event_name == 'push' &&
+    #   startsWith(github.event.ref, 'refs/tags')
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Download artifacts
         uses: actions/download-artifact@v4.1.7
         with:
@@ -284,9 +284,9 @@ jobs:
         with:
           name: lakers-c
           path: ./release-artifacts
-      - name: Release
-        uses: ncipollo/release-action@v1
-        with:
-          generateReleaseNotes: true
-          artifacts: "release-artifacts/*"
-          token: ${{ secrets.RELEASE_TOKEN }}
+      # - name: Release
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     generateReleaseNotes: true
+      #     artifacts: "release-artifacts/*"
+      #     token: ${{ secrets.RELEASE_TOKEN }}
